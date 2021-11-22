@@ -9,7 +9,7 @@ Requirements:
 Installation:
 `git clone git@github.com:zeetabit/dumper.git data/dumps`
 
-For actual usage & examples see `bash data/dumps/dumper.bash`
+For actual usage & examples see help section in `bash data/dumps/dumper.bash`
 
 Examples:
 1) make snaphot with `initial` prefix:
