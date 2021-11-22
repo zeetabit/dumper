@@ -4,6 +4,7 @@ Tested only for development purporses.
 Requirements:
 - Installed spryker project.
 - Docker with docker/sdk based deploy.
+- Works only under project directory.
 
 Installation:
 `git clone git@github.com:zeetabit/dumper.git data/dumps`
