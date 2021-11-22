@@ -5,7 +5,6 @@ echo "WELCOME to the DUMP DUMP DUMP utility."
 # Helpers                                                                      #
 ################################################################################
 
-declare -A availableOptions=( [-d]=directory [-t]=time [-m]=mode [-p]=dumpsPath [-s]=subMode )
 Help() {
 cat << EOL
 Dump spryker tool, helps with testing at docker & development process.
