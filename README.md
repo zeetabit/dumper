@@ -1,10 +1,14 @@
+# Spryker Data Dump Tool (Dumper)
+
 This tool can help you with making project's snapshot.
 Tested only for development purporses.
 
 Requirements:
 - Installed spryker project.
 - Docker with docker/sdk based deploy.
-- Works only under project directory.
+- Works only under project directory (data/dumps).
+- Works only with bash 5+.
+- Tested only on Mac / Linux.
 
 Installation:
 `git clone git@github.com:zeetabit/dumper.git data/dumps`
