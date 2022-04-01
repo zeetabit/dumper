@@ -239,19 +239,42 @@ fi
 printf "= Search ...";
 if [ "$subMode" == "all" ] && [ "$mode" != "none" ] || [ "$subMode" == "search" ] && [ "$mode" != "none" ];
 then
+    dumpFile="$dumpsPath"/"$time"-elasticsearch.tar.gz
+
     if [ "$mode" == "export" ]; then
         printf '.. create snapshot repository ..'
         docker/sdk cli console elasticsearch:snapshot:register-repository loc &>> /dev/null
         printf '.. make snapshot ..'
         docker/sdk cli console elasticsearch:snapshot:delete loc "$time"-snapshot &>> /dev/null
         docker/sdk cli console search:snapshot:create loc "$time"-snapshot &>> /dev/null || exit 1;
+        #hack
+        sleep 15
+
+        destination="$dumpsPath"/"$time"-elasticsearch
+        printf ".. copy data to temporary dir..";
+        rm -rf "$destination" &>> /dev/null
+        docker cp "$CONTAINER_SEARCH":/usr/share/elasticsearch/data/snapshots/loc "$destination" || exit 1;
+        printf "..pack as archive .."
+        tar -zcvf "$dumpFile" "$destination" &>> /dev/null || exit 1;
+        printf "..cleanup temporary dir.."
+        rm -rf "$destination" || exit 1;
     else
-        printf ".. close EL indexes .."
-        docker/sdk cli console elasticsearch:index:close &>> /dev/null
+        printf ".. delete EL indexes .."
+        docker/sdk cli console elasticsearch:index:delete &>> /dev/null
+
+        source="$dumpsPath"/"$time"-elasticsearch
+        printf "..unpack backup data to temporary dir .."
+        rm -rf "$source" &>> /dev/null
+        tar -zxvf "$dumpFile" &>> /dev/null || exit 1
+        printf "..cleanup container data.."
+        docker exec -u root -it "$CONTAINER_SEARCH" rm -rf /usr/share/elasticsearch/data/snapshots/loc/ || exit 1
+        printf "..put unpacked data from temporary dir to container.."
+        docker cp "$source" "$CONTAINER_SEARCH":/usr/share/elasticsearch/data/snapshots/loc
+        printf "..cleanup temp dir.."
+        rm -rf "$source"
+
         printf ".. restore snapshot .."
         docker/sdk cli console search:snapshot:restore loc "$time"-snapshot &>> /dev/null
-        printf ".. open EL indexes .."
-        docker/sdk cli elasticsearch:index:open &>> /dev/null
     fi
     printf "ok\n";
 else
