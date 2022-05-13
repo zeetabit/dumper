@@ -147,7 +147,7 @@ then
     printf  "changing to branch %s ... " "$changeBranch";
     git checkout "$changeBranch" || exit 1;
     printf "... regenerate transfers, propel::migrate ...";
-    docker/sdk cli "composer install --prefer-dist && console transfer:e:g && console transfer:d:g && console transfer:g && console propel:migrate" &>> /dev/null
+    docker/sdk cli "composer install --prefer-dist && console transfer:e:g && console transfer:d:g && console transfer:g && console propel:migrate && console propel:migrate" &>> /dev/null
     printf  "ok\n";
 fi
 
@@ -221,14 +221,14 @@ then
     if [ "$mode" == "export" ]; then
         destination="$dumpsPath"/"$time"-mysql.sql.gz
         printf ".. dumping data ..";
-        cmd='mysqldump --user=${SPRYKER_DB_USERNAME} --password=${SPRYKER_DB_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} ${SPRYKER_DB_DATABASE} | gzip -c > '"$destination"
+        cmd='mysqldump --user=${SPRYKER_DB_USERNAME} --password=${SPRYKER_DB_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} --all-databases | gzip -c > '"$destination"
         docker/sdk cli "$cmd" &>> /dev/null
     elif [[ ! -f "$dumpFile" ]]; then
         printf "dump %s not found\n" "$dumpFile";
     else
         source="$dumpFile"
         printf "..restore data to container.."
-        cmd="gzip -dc $source"' | mysql --user=${SPRYKER_DB_ROOT_USERNAME} --password=${SPRYKER_DB_ROOT_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} ${SPRYKER_DB_DATABASE}'
+        cmd="gzip -dc $source"' | mysql --user=${SPRYKER_DB_ROOT_USERNAME} --password=${SPRYKER_DB_ROOT_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT}'
         docker/sdk cli "$cmd" &>> /dev/null
     fi
     printf "ok\n";
