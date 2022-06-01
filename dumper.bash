@@ -221,7 +221,7 @@ then
     if [ "$mode" == "export" ]; then
         destination="$dumpsPath"/"$time"-mysql.sql.gz
         printf ".. dumping data ..";
-        cmd='mysqldump --user=${SPRYKER_DB_USERNAME} --password=${SPRYKER_DB_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} --all-databases | gzip -c > '"$destination"
+        cmd='mysqldump --user=${SPRYKER_DB_USERNAME} --password=${SPRYKER_DB_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} --all-databases --add-drop-database | gzip -c > '"$destination"
         docker/sdk cli "$cmd" &>> /dev/null
     elif [[ ! -f "$dumpFile" ]]; then
         printf "dump %s not found\n" "$dumpFile";
