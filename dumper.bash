@@ -13,7 +13,7 @@ Syntax: bash $(dirname "$0")/$(basename "$0") [-d|t|m|p|h]
 options:
     d     Custom project directory, default: spryker-b2c or previously saved.
     t     Custom dump prefix, default: \`Y-m-d-H-i-\`.
-    m     Mode, default: export. Available modes: export, e, import, i, none, n.
+    m     Mode, default: export. Available modes: export, e, import, i, workers, w, none, n.
     s     SubMode, default: all. Available sub modes: broker, storage, database, search.
     p     Dumps path, default: {project_directory}/data/dumps. Should be under {project_directory}.
     c     Changes branch and makes export or import (depends on selected mode).
@@ -35,18 +35,19 @@ Change to custom branch without import/export:
 EOL
 }
 
-declare -A availableModes=( [import]=import [i]=import [undump]=import [u]=import [input]=import [export]=export [e]=export [dump]=export [e]=export [d]=export [output]=export [o]=export [none]=none [n]=none [nothing]=none )
+declare -A availableModes=( [import]=import [i]=import [undump]=import [u]=import [input]=import [export]=export [e]=export [dump]=export [e]=export [d]=export [output]=export [o]=export [none]=none [n]=none [nothing]=none [w]=workers [workers]=workers )
 IllegalMode() {
 cat << EOL
 Illegal "mode" option value, available values:
     - Dump importing values: import, i, undump, u, input.
     - Make dump values: export, e, dump, d, output, o.
+    - Run parralel workers: workers, w.
     - Do nothing: nothing, none, n.
 
 EOL
 }
 
-declare -A availableSubModes=( [all]=all [broker]=broker [storage]=storage [database]=database [search]=search )
+declare -A availableSubModes=( [all]=all [broker]=broker [storage]=storage [database]=database [search]=search [workers]=workers )
 IllegalSubMode() {
 cat << EOL
 Illegal "sub mode" option value.
@@ -81,6 +82,9 @@ do
             opsPassed=1;;
         c)
             changeBranch=${OPTARG};
+            opsPassed=1;;
+        r)
+            mode=${OPTARG};
             opsPassed=1;;
         *) Help
            exit 1 ;;
@@ -152,6 +156,19 @@ then
 fi
 
 printf "========> [%s] mode <=======\n" "$mode";
+
+if [ "$mode" == "workers" ];
+then
+printf "= Workers [5]...";
+mode="none"
+$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
+$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
+$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
+$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
+$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
+wait
+printf "finished\n";
+fi
 
 printf "= Broker...";
 if [ "$subMode" == "all" ] && [ "$mode" != "none" ] || [ "$subMode" == "broker" ]  && [ "$mode" != "none" ];
