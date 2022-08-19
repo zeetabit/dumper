@@ -20,17 +20,17 @@ Examples:
 ```
 bash data/dumps/dumper.bash -m export -t initial
 ```
-2) go to che `custom_branch` with rebuild transfer objects and propel:install:
-```
-bash data/dumps/dumper.bash -m none -c custom_branch
-```
-3) restore the data from snapshot with `initial` prefix:
+2) restore the data from snapshot with `initial` prefix:
 ```
 bash data/dumps/dumper.bash -m import -t initial
 ```
+3) go to che `custom_branch` with rebuild transfer objects and propel:install:
+```
+bash data/dumps/dumper.bash -m none -c custom_branch
+```
 4) go to the initial branch, let's be `development` and restore the data from snapshot with `initial` prefix:
 ```
-bash data/dumps/dumper.bash -m import -t initial -c development 
+bash data/dumps/dumper.bash -m import -t initial -c development
 ```
 5) run command `console q:w:s -s` in 5 parralel processes:
 ```
