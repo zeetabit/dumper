@@ -11,6 +11,8 @@ echo "WELCOME to the DUMP DUMP DUMP utility."
 # Helpers                                                                      #
 ################################################################################
 
+trap "echo Exited!; exit;" SIGINT SIGTERM
+
 Help() {
 cat << EOL
 Dump spryker tool, helps with testing at docker & development process.
