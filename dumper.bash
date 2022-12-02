@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ################################################################################
-# maintainer: zetabit                                                          #
+# maintainer: zeetabit                                                         #
 # Copied from https://github.com/zeetabit/dumper                               #
 ################################################################################
 
