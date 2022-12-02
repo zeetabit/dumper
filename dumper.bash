@@ -1,4 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+#################################################################################
+# mainainer: zetabit                                                            #
+# Copied from https://github.com/zeetabit/dumper                                #
+#################################################################################
+
 echo "WELCOME to the DUMP DUMP DUMP utility."
 
 ################################################################################
@@ -13,7 +19,7 @@ Syntax: bash $(dirname "$0")/$(basename "$0") [-d|t|m|p|h]
 options:
     d     Custom project directory, default: spryker-b2c or previously saved.
     t     Custom dump prefix, default: \`Y-m-d-H-i-\`.
-    m     Mode, default: export. Available modes: export, e, import, i, workers, w, none, n.
+    m     Mode, default: export. Available modes: export, e, import, i, none, n.
     s     SubMode, default: all. Available sub modes: broker, storage, database, search.
     p     Dumps path, default: {project_directory}/data/dumps. Should be under {project_directory}.
     c     Changes branch and makes export or import (depends on selected mode).
@@ -35,19 +41,18 @@ Change to custom branch without import/export:
 EOL
 }
 
-declare -A availableModes=( [import]=import [i]=import [undump]=import [u]=import [input]=import [export]=export [e]=export [dump]=export [e]=export [d]=export [output]=export [o]=export [none]=none [n]=none [nothing]=none [w]=workers [workers]=workers )
+declare -A availableModes=( [import]=import [i]=import [undump]=import [u]=import [input]=import [export]=export [e]=export [dump]=export [e]=export [d]=export [output]=export [o]=export [none]=none [n]=none [nothing]=none )
 IllegalMode() {
 cat << EOL
 Illegal "mode" option value, available values:
     - Dump importing values: import, i, undump, u, input.
     - Make dump values: export, e, dump, d, output, o.
-    - Run parralel workers: workers, w.
     - Do nothing: nothing, none, n.
 
 EOL
 }
 
-declare -A availableSubModes=( [all]=all [broker]=broker [storage]=storage [database]=database [search]=search [workers]=workers )
+declare -A availableSubModes=( [all]=all [broker]=broker [storage]=storage [database]=database [search]=search )
 IllegalSubMode() {
 cat << EOL
 Illegal "sub mode" option value.
@@ -83,9 +88,6 @@ do
         c)
             changeBranch=${OPTARG};
             opsPassed=1;;
-        r)
-            mode=${OPTARG};
-            opsPassed=1;;
         *) Help
            exit 1 ;;
     esac
@@ -119,10 +121,25 @@ CONTAINER_PREFIX_DEPLOY_LINE_PREFIX='readonly COMPOSE_PROJECT_NAME='
 CONTAINER_PREFIX=$(sed -n -e "/^${CONTAINER_PREFIX_DEPLOY_LINE_PREFIX}/p" $deployPath)
 CONTAINER_PREFIX="${CONTAINER_PREFIX//$CONTAINER_PREFIX_DEPLOY_LINE_PREFIX/}"
 
+SPRYKER_STORES_DEPLOY_LINE_LOCAL_PREFIX='local STORES=('
+SPRYKER_STORES_DEPLOY_LINE_PREFIX='readonly SPRYKER_STORES='
+SPRYKER_STORES=$(sed -n -e "/^${SPRYKER_STORES_DEPLOY_LINE_PREFIX}/p" $deployPath)
+SPRYKER_STORES="${SPRYKER_STORES//$SPRYKER_STORES_DEPLOY_LINE_PREFIX/}"
+SPRYKER_STORES="${SPRYKER_STORES//*${SPRYKER_STORES_DEPLOY_LINE_LOCAL_PREFIX}/}"
+SPRYKER_STORES=${SPRYKER_STORES%???}
+IFS=" " read -r -a SPRYKER_STORES <<< "$SPRYKER_STORES"
+
+if [ -z "$CONTAINER_PREFIX" ]
+then
+      echo "\$CONTAINER_PREFIX is empty. Exit."
+      exit 1
+fi
+
 CONTAINER_BROKER=${CONTAINER_PREFIX}_broker_1
 CONTAINER_STORE=${CONTAINER_PREFIX}_key_value_store_1
 CONTAINER_DATABASE=${CONTAINER_PREFIX}_database_1
 CONTAINER_SEARCH=${CONTAINER_PREFIX}_search_1
+CONTAINER_CLI=${CONTAINER_PREFIX}_cli_1
 
 printf "Containers status at %s namespace... " "$CONTAINER_PREFIX";
 if [ ! "$(docker ps -aq -f name=$CONTAINER_BROKER)" ] | [ "$(docker ps -aq -f status=exited -f name=$CONTAINER_BROKER)" ]; then
@@ -155,20 +172,37 @@ then
     printf  "ok\n";
 fi
 
-printf "========> [%s] mode <=======\n" "$mode";
+perActiveStore () {
+    local command=$1
+    local hideOutput=${2:-0}
+    shift
+    for storeName in "${SPRYKER_STORES[@]}"
+    do
+        printf '%s...' "$storeName"
 
-if [ "$mode" == "workers" ];
-then
-printf "= Workers [5]...";
-mode="none"
-$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
-$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
-$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
-$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
-$startDirectory/docker/sdk cli "console q:w:s -s" & >> /dev/null
-wait
-printf "finished\n";
-fi
+        if [ "$hideOutput" == 1 ]; then
+            APPLICATION_STORE="$storeName" $command &>> /dev/null
+        else
+            APPLICATION_STORE="$storeName" $command
+        fi
+    done
+}
+
+suspendScheduler () {
+    printf "Stopping scheduler..."
+    docker/sdk console 'scheduler:suspend' &>> /dev/null
+    printf "done\n"
+}
+
+setupScheduler () {
+    printf "Starting scheduler..."
+    docker/sdk console 'scheduler:resume' &>> /dev/null
+    printf "done\n"
+}
+
+suspendScheduler
+
+printf "========> [%s] mode <=======\n" "$mode";
 
 printf "= Broker...";
 if [ "$subMode" == "all" ] && [ "$mode" != "none" ] || [ "$subMode" == "broker" ]  && [ "$mode" != "none" ];
@@ -234,17 +268,51 @@ fi
 printf "= Database ...";
 if [ "$subMode" == "all" ] && [ "$mode" != "none" ] || [ "$subMode" == "database" ] && [ "$mode" != "none" ];
 then
-    dumpFile="$dumpsPath"/"$time"-mysql.sql.gz
+    dumpFile="$dumpsPath"/"$time"-mysql.sql
+    dumpFileGz="$dumpFile".gz
     if [ "$mode" == "export" ]; then
-        destination="$dumpsPath"/"$time"-mysql.sql.gz
+        printf ".. permission folder change .."
+        docker/sdk cli "mkdir -p $dumpsPath && chmod 0777 $dumpsPath" &>> /dev/null
         printf ".. dumping data ..";
-        cmd='mysqldump --user=${SPRYKER_DB_USERNAME} --password=${SPRYKER_DB_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} --all-databases --add-drop-database | gzip -c > '"$destination"
-        docker/sdk cli "$cmd" &>> /dev/null
-    elif [[ ! -f "$dumpFile" ]]; then
-        printf "dump %s not found\n" "$dumpFile";
+        cmd1='mysqldump --user=${SPRYKER_DB_ROOT_USERNAME} --password=${SPRYKER_DB_ROOT_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT} --all-databases --add-drop-database > '"$dumpFile"
+        docker/sdk cli "$cmd1" &>> /dev/null
+
+        maxRetry=5
+        counterCheck=0
+        counterDumpAttempts=0
+        while : ; do
+            cmd="[ -f $dumpFile ]"
+            cmd="$cmd"
+            docker exec "$CONTAINER_CLI" $cmd && break
+            printf " _Pausing until '$dumpFile' file in container '$CONTAINER_CLI' exists._ "
+            sleep 1
+            if [[ counterCheck -eq $maxRetry ]]
+            then
+                echo " __reached check attempt limit, try to dump one more time__ "
+                docker/sdk cli "$cmd1"
+                ((counterCheck=0))
+                ((counterDumpAttempts++))
+            fi
+            [[ counterDumpAttempts -eq $maxRetry ]] && echo "reached dump attepmt limit, exit..." && exit 1
+            ((counterCheck++))
+        done
+
+        if [[ ! -f "$startDirectory/$dumpFile" ]]
+        then
+            printf " _docker cp from container to host file path_ "
+            docker cp "$CONTAINER_CLI:/data/$dumpFile" "$startDirectory/$dumpFile" &>> /dev/null || exit 1;
+        fi
+
+        gzip $dumpFile
+    elif [[ ! -f "$dumpFileGz" ]]; then
+        printf "dump %s not found\n" "$dumpFileGz" && exit 1;
     else
-        source="$dumpFile"
-        printf "..restore data to container.."
+        source="$dumpFileGz"
+        cmd="[ ! -f $source ]"
+        cmd="$cmd"
+        printf "..put dump to container.."
+        docker cp "$startDirectory/$dumpFileGz" "$CONTAINER_CLI:/data/$dumpFileGz" &>> /dev/null || exit 1;
+        printf "..restore data from dump to container.."
         cmd="gzip -dc $source"' | mysql --user=${SPRYKER_DB_ROOT_USERNAME} --password=${SPRYKER_DB_ROOT_PASSWORD} --host=${SPRYKER_DB_HOST} --port=${SPRYKER_DB_PORT}'
         docker/sdk cli "$cmd" &>> /dev/null
     fi
@@ -260,10 +328,13 @@ then
 
     if [ "$mode" == "export" ]; then
         printf '.. (re)create snapshot repository ..'
+        printf '_ curl delete _'
         curl -X DELETE "localhost:9200/_snapshot/loc?pretty" &>> /dev/null
-        docker exec -u root -it "$CONTAINER_SEARCH" rm -rf /usr/share/elasticsearch/data/snapshots/ &>> /dev/null || exit 1
+        printf '_ rm folder _'
+        docker exec -u 0 "$CONTAINER_SEARCH" rm -rf /usr/share/elasticsearch/data/snapshots/ &>> /dev/null || exit 1
+        printf '_ cli register repository _'
         docker/sdk cli console elasticsearch:snapshot:register-repository loc &>> /dev/null
-        printf '.. make snapshot ..'
+        printf '.. make snapshot, cli create snapshot ..'
         docker/sdk cli console search:snapshot:create loc "$time"-snapshot &>> /dev/null || exit 1;
 
         printf '.. wait while snapshot is processing (async operation) ..'
@@ -312,6 +383,8 @@ else
     printf "skipped\n"
 fi
 
+setupScheduler
+
 echo "=============> end <============"
 
 echo "-t option prefix: ${time}"
@@ -320,3 +393,4 @@ echo "dumps directory: ${dumpsPath}"
 
 echo
 echo "See you!!"
+
