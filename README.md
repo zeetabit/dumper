@@ -32,3 +32,7 @@ bash qa.sh s custom_branch
 ```
 bash qa.sh r
 ```
+5) use custom install hook for qa.sh
+```
+SPRYKER_HOOK_INSTALL="vendor/bin/install -r some/custom/path --no-ansi -vvv" bash qa.sh i
+```
