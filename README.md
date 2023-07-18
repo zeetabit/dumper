@@ -24,15 +24,11 @@ bash data/dumps/dumper.bash -m export -t initial
 ```
 bash data/dumps/dumper.bash -m import -t initial
 ```
-3) go to che `custom_branch` with rebuild transfer objects and propel:install:
+3) go to the `custom_branch` with rebuild transfer objects and propel:install:
 ```
-bash data/dumps/dumper.bash -m none -c custom_branch
+bash qa.sh s custom_branch
 ```
-4) go to the initial branch, let's be `development` and restore the data from snapshot with `initial` prefix:
+4) go to the initial branch, let's be `development` and restore the data from snapshot with `development` prefix:
 ```
-bash data/dumps/dumper.bash -m import -t initial -c development
-```
-5) run command `console q:w:s -s` in 5 parralel processes:
-```
-bash data/dumps/dumper.bash -m run -t "console q:w:s -s"
+bash qa.sh r
 ```
