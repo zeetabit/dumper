@@ -115,7 +115,7 @@ init () {
     git reset --hard HEAD
     echo "$contentOfMe" > qa.sh
 
-    mkdir $dumperDirPath -p
+    mkdir -p $dumperDirPath
     cp $dumperDistPath $dumperPath
 
     echo -e "${RED}===]>${NC} docker/sdk clean-data"
