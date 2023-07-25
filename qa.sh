@@ -87,7 +87,7 @@ warmup() {
 
     countFiles=$(git diff --name-status "$primaryBranch" | grep "src/" | grep "D   \|A     " | wc -l | tr -d '[:blank:]')
     countFiles=$(( $countFiles+0 ))
-    if [ "$countFiles" -gt "0"  ] || [ "$currentBranch" == "$primaryBranch" ]; then
+    if [ "$countFiles" -gt "0"  ] || [ "$currentBranch" == "$primaryBranch" ] || [ "$secondOption" == "-f" ]; then
         echo -e "${RED}===]>${NC} console cache:class-resolver:build"
         docker/sdk cli "console cache:class-resolver:build"
     fi
