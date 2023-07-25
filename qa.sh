@@ -44,15 +44,15 @@ options:
 
 examples:
 Initial setup or project reset:
-    bash -i
+    bash qa.sh -i
 Update initial setup with latest initial branch [$primaryBranch]:
-    bash -u
+    bash qa.sh -u
 Test some branch
-    bash -s <branch_name>
+    bash qa.sh -s <branch_name>
     or if need to test current branch
-    bash -s
+    bash qa.sh -s
 Move back to initial branch
-    bash -r
+    bash qa.sh -r
 
 EOL
 }
