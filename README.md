@@ -30,7 +30,7 @@ bash qa.sh s custom_branch
 ```
 4) go to the initial branch, let's be `development` and restore the data from snapshot with `development` prefix:
 ```
-bash qa.sh r
+bash qa.sh -r
 ```
 5) use custom install hook for qa.sh
 ```
