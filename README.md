@@ -24,15 +24,15 @@ bash data/dumps/dumper.bash -m export -t initial
 ```
 bash data/dumps/dumper.bash -m import -t initial
 ```
-3) go to the `custom_branch` with rebuild transfer objects and propel:install:
+3)  (can be installed by `wget https://raw.githubusercontent.com/zeetabit/dumper/main/qa.sh`) go to the `custom_branch` with rebuild transfer objects and propel:install:
 ```
-bash qa.sh s custom_branch
+bash qa.sh -s custom_branch
 ```
-4) go to the initial branch, let's be `development` and restore the data from snapshot with `development` prefix:
+4)  (can be installed by `wget https://raw.githubusercontent.com/zeetabit/dumper/main/qa.sh`) go to the initial branch, let's be `development` and restore the data from snapshot with `development` prefix: 
 ```
 bash qa.sh -r
 ```
 5) use custom install hook for qa.sh; (can be installed by `wget https://raw.githubusercontent.com/zeetabit/dumper/main/qa.sh`)
 ```
-SPRYKER_HOOK_INSTALL="vendor/bin/install -r some/custom/path --no-ansi -vvv" bash qa.sh i
+SPRYKER_HOOK_INSTALL="vendor/bin/install -r some/custom/path --no-ansi -vvv" bash qa.sh -i
 ```
