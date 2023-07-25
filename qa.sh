@@ -108,7 +108,7 @@ init () {
 
     currentBranch="$(git branch --show-current)"
     deployPath=docker/deployment/default/deploy
-    if [[ $currentBranch != "$primaryBranch"  ]]; then echo "[ERROR] I can init project only under primaryBranch: $primaryBranch." && exit 1; fi
+    [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can init project only under primaryBranch: $primaryBranch. To force please add '-f'." && exit 1;
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
     git clean -fdX -e \!.idea -e \!.idea/dataSources.local.xml -e \!.idea/dataSources/ -e \!.idea/workspace.xml -e \!qa.sh
