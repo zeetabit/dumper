@@ -8,6 +8,7 @@
 contentOfMe=$(cat ./qa.sh)
 primaryBranch='development'
 command="${1: -none}"
+command="${command:1}"
 secondOption="${2: -noneSecondOption}"
 SPRYKER_HOOK_INSTALL_DEFAULT='vendor/bin/install -r production --no-ansi -vvv'
 SPRYKER_HOOK_INSTALL="${SPRYKER_HOOK_INSTALL:=$SPRYKER_HOOK_INSTALL_DEFAULT}"
