@@ -132,16 +132,17 @@ init () {
 snapshot () {
     currentBranch="$(git branch --show-current)"
     echo "make snapshot for $currentBranch branch"
-    echo -e "${RED}===]>${NC} bash data/dumps/Dumper.bash -m export -t $currentBranch"
-    rm -f data/dumps/"$currentBranch"-mysql.sql.gz
-    bash data/dumps/Dumper.bash -m export -t "$currentBranch"
+    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m export -t $currentBranch"
+    mkdir -p $dumperDirPath/$currentBranch
+    rm -f $dumperDirPath/"$currentBranch"-mysql.sql.gz
+    bash $dumperDirPath/dumper.bash -m export -t "$currentBranch"
 }
 
 snapshotRestore () {
     currentBranch="$(git branch --show-current)"
     echo "restore from snapshot for $currentBranch branch"
-    echo -e "${RED}===]>${NC} bash data/dumps/Dumper.bash -m import -t $currentBranch"
-    bash data/dumps/Dumper.bash -m import -t "$currentBranch"
+    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m import -t $currentBranch"
+    bash $dumperDirPath/dumper.bash -m import -t "$currentBranch"
 }
 
 if [ "$command" == "init" ];
