@@ -167,7 +167,6 @@ then
     if [ "$expectedBranch" != "$currentBranch" ];
     then
         echo -e "${RED}===]>${NC} git checkout \"${expectedBranch}\" -f"
-        exit 1;
         git checkout "$expectedBranch" -f
     fi;
 
