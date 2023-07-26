@@ -123,8 +123,12 @@ init () {
     docker/sdk clean-data
     echo -e "${RED}===]>${NC} docker/sdk up"
     docker/sdk up
-    echo -e "${RED}===]>${NC} docker/sdk cli console q:w:s -s"
+    echo -e "${RED}===]>${NC} [1] docker/sdk cli console q:w:s -s"
     docker/sdk cli console q:w:s -s
+    echo -e "${RED}===]>${NC} [2] docker/sdk cli console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} [3] docker/sdk cli console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
 
     snapshot;
 }
