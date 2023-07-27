@@ -157,12 +157,12 @@ init () {
     echo "took $took sec"
 
     start=`date +%s`
-    echo -e "${RED}===]>${NC} [$(date '+%Y-%m-%d %H:%M:%S')] docker/sdk cli console q:w:s [4 threads]"
-    docker/sdk cli console q:w:s &
-    docker/sdk cli console q:w:s &
-    docker/sdk cli console q:w:s &
-    docker/sdk cli console q:w:s &
-    wait
+    echo -e "${RED}===]>${NC} console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
     took=$((`date +%s`-$start))
     echo "took $took sec"
 
