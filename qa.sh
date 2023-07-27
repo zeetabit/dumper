@@ -10,6 +10,16 @@ command="${1: -none}"
 command="${command:1}"
 secondOption="${2: -noneSecondOption}"
 SPRYKER_HOOK_INSTALL_DEFAULT='vendor/bin/install -r production --no-ansi -vvv'
+
+projectYmlPath='docker/deployment/default/project.yml'
+if [[ -f $projectYmlPath ]]; then
+    pipelineDefinitionPrefix="pipeline: "
+    pipelineDefinitionPrefixReplace=""
+    SPRYKER_HOOK_INSTALL_DEFAULT=$(grep "$pipelineDefinitionPrefix" $projectYmlPath)
+    SPRYKER_HOOK_INSTALL_DEFAULT="${SPRYKER_HOOK_INSTALL_DEFAULT/${pipelineDefinitionPrefix}/${pipelineDefinitionPrefixReplace}}"
+    SPRYKER_HOOK_INSTALL_DEFAULT="vendor/bin/install -r $SPRYKER_HOOK_INSTALL_DEFAULT --no-ansi -vvv"
+fi
+
 SPRYKER_HOOK_INSTALL="${SPRYKER_HOOK_INSTALL:=$SPRYKER_HOOK_INSTALL_DEFAULT}"
 
 RED='\033[0;31m'
@@ -124,19 +134,37 @@ init () {
     [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can init project only under primaryBranch: $primaryBranch. To force please add '-f'." && exit 1;
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
+    start=`date +%s`
     git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps
     git clean -fdx -e .idea -e qa.sh -e data/dumps
     git reset --hard HEAD
+    took=$((`date +%s`-$start))
+    echo "took $took sec"
 
     mkdir -p $dumperDirPath
     cp -R "$dumperDistPath" "$dumperPath"
 
+    start=`date +%s`
     echo -e "${RED}===]>${NC} docker/sdk clean-data"
     docker/sdk clean-data
+    took=$((`date +%s`-$start))
+    echo "took $took sec"
+
+    start=`date +%s`
     echo -e "${RED}===]>${NC} docker/sdk up"
     docker/sdk up
-    echo -e "${RED}===]>${NC} docker/sdk cli console q:w:s -s"
-    docker/sdk cli console q:w:s -s
+    took=$((`date +%s`-$start))
+    echo "took $took sec"
+
+    start=`date +%s`
+    echo -e "${RED}===]>${NC} [$(date '+%Y-%m-%d %H:%M:%S')] docker/sdk cli console q:w:s [4 threads]"
+    docker/sdk cli console q:w:s &
+    docker/sdk cli console q:w:s &
+    docker/sdk cli console q:w:s &
+    docker/sdk cli console q:w:s &
+    wait
+    took=$((`date +%s`-$start))
+    echo "took $took sec"
 
     snapshot;
 }
