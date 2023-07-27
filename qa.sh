@@ -135,8 +135,8 @@ init () {
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
     start=`date +%s`
-    git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps
-    git clean -fdx -e .idea -e qa.sh -e data/dumps
+    git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps -e \!.npm
+    git clean -fdx -e .idea -e qa.sh -e data/dumps - .npm
     git reset --hard HEAD
     took=$((`date +%s`-$start))
     echo "took $took sec"
