@@ -193,7 +193,7 @@ then
 elif [ "$command" == "update" ];
 then
     currentBranch="$(git branch --show-current)"
-    [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can update project only under primaryBranch: $primaryBranch. Please use additional '-f' to force." && exit 1; fi
+    [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can update project only under primaryBranch: $primaryBranch. Please use additional '-f' to force." && exit 1;
     echo -e "${RED}===]>${NC} git pull -f"
     git pull -f
     warmup;
