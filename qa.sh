@@ -79,11 +79,13 @@ dumperDistPath='./tests/dump_docker_data_to_logs_in_pipeline.sh'
 warmup() {
     printf "Warmup ... \n"
 
+    local currentBranch
     currentBranch="$(git branch --show-current)"
 
     echo -e "${RED}===]>${NC} composer install --prefer-dist"
     docker/sdk cli "composer install --prefer-dist"
 
+    local countFiles
     countFiles=$(git diff --name-status "$primaryBranch" | grep "src/" | grep "D   \|A     " | wc -l | tr -d '[:blank:]')
     countFiles=$(( $countFiles+0 ))
     if [ "$countFiles" -gt "0"  ] || [ "$currentBranch" == "$primaryBranch" ] || [ "$secondOption" == "-f" ]; then
@@ -106,11 +108,20 @@ warmup() {
     exit 1;
 }
 
+getCurrentSnapshot () {
+    local currentBranch
+    currentBranch="$(git branch --show-current)"
+    currentBranch="${currentBranch////-}"
+
+    echo "$currentBranch"
+}
+
 init () {
     printf "Starting init...\n"
 
+    local currentBranch
     currentBranch="$(git branch --show-current)"
-    deployPath=docker/deployment/default/deploy
+    local deployPath=docker/deployment/default/deploy
     [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can init project only under primaryBranch: $primaryBranch. To force please add '-f'." && exit 1;
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
@@ -132,19 +143,21 @@ init () {
 }
 
 snapshot () {
-    currentBranch="$(git branch --show-current)"
-    echo "make snapshot for $currentBranch branch"
-    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m export -t $currentBranch"
-    mkdir -p $dumperDirPath/$currentBranch
-    rm -f $dumperDirPath/"$currentBranch"-mysql.sql.gz
-    bash $dumperDirPath/dumper.bash -m export -t "$currentBranch"
+    local currentSnapshot
+    currentSnapshot="$(getCurrentSnapshot)"
+    echo "make snapshot $currentSnapshot"
+    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m export -t $currentSnapshot"
+    mkdir -p "$dumperDirPath/$currentSnapshot"
+    rm -f $dumperDirPath/"$currentSnapshot"-mysql.sql.gz
+    bash $dumperDirPath/dumper.bash -m export -t "$currentSnapshot"
 }
 
 snapshotRestore () {
-    currentBranch="$(git branch --show-current)"
-    echo "restore from snapshot for $currentBranch branch"
-    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m import -t $currentBranch"
-    bash $dumperDirPath/dumper.bash -m import -t "$currentBranch"
+    local currentSnapshot
+    currentSnapshot="$(git branch --show-current)"
+    echo "restore from snapshot $currentSnapshot"
+    echo -e "${RED}===]>${NC} bash $dumperDirPath/dumper.bash -m import -t $currentSnapshot"
+    bash $dumperDirPath/dumper.bash -m import -t "$currentSnapshot"
 }
 
 if [ "$command" == "init" ];
