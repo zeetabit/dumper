@@ -5,7 +5,6 @@
 ################################################################################
 
 # Branch will be used as initial.
-contentOfMe=$(cat ./qa.sh)
 primaryBranch='development'
 command="${1: -none}"
 command="${command:1}"
@@ -100,6 +99,10 @@ warmup() {
     SPRYKER_HOOK_INSTALL=$SPRYKER_HOOK_INSTALL docker/sdk cli "$SPRYKER_HOOK_INSTALL"
     echo -e "${RED}===]>${NC} console q:w:s -s"
     docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s -s"
+    docker/sdk cli "console q:w:s -s"
     exit 1;
 }
 
@@ -111,24 +114,19 @@ init () {
     [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can init project only under primaryBranch: $primaryBranch. To force please add '-f'." && exit 1;
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
-    git clean -fdX -e \!.idea -e \!.idea/dataSources.local.xml -e \!.idea/dataSources/ -e \!.idea/workspace.xml -e \!qa.sh
-    git clean -fdx -e \!.idea -e \!.idea/dataSources.local.xml -e \!.idea/dataSources/ -e \!.idea/workspace.xml -e \!qa.sh
+    git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps
+    git clean -fdx -e .idea -e qa.sh -e data/dumps
     git reset --hard HEAD
-    echo "$contentOfMe" > qa.sh
 
     mkdir -p $dumperDirPath
-    cp $dumperDistPath $dumperPath
+    cp -R "$dumperDistPath" "$dumperPath"
 
     echo -e "${RED}===]>${NC} docker/sdk clean-data"
     docker/sdk clean-data
     echo -e "${RED}===]>${NC} docker/sdk up"
     docker/sdk up
-    echo -e "${RED}===]>${NC} [1] docker/sdk cli console q:w:s -s"
+    echo -e "${RED}===]>${NC} docker/sdk cli console q:w:s -s"
     docker/sdk cli console q:w:s -s
-    echo -e "${RED}===]>${NC} [2] docker/sdk cli console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
-    echo -e "${RED}===]>${NC} [3] docker/sdk cli console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
 
     snapshot;
 }
