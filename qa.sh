@@ -125,7 +125,7 @@ init () {
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
     git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps
-    git clean -nfdx -e .idea -e qa.sh -e data/dumps
+    git clean -fdx -e .idea -e qa.sh -e data/dumps
     git reset --hard HEAD
 
     mkdir -p $dumperDirPath
