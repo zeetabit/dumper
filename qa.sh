@@ -25,6 +25,14 @@ SPRYKER_HOOK_INSTALL="${SPRYKER_HOOK_INSTALL:=$SPRYKER_HOOK_INSTALL_DEFAULT}"
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# trap ctrl-c and call ctrl_c()
+trap ctrl_c INT
+
+function ctrl_c() {
+    echo 'I see you pushed ctrl+c, exit...'
+    exit 1
+}
+
 echo "WELCOME to the QA utility."
 
 ################################################################################
