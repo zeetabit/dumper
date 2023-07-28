@@ -109,12 +109,8 @@ warmup() {
     docker/sdk cli "console cache:empty-all"
     echo -e "${RED}===]>${NC} $SPRYKER_HOOK_INSTALL"
     SPRYKER_HOOK_INSTALL=$SPRYKER_HOOK_INSTALL docker/sdk cli "$SPRYKER_HOOK_INSTALL"
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s [3 workers]... wait"
+    docker/sdk cli "console q:w:s& console q:w:s& console q:w:s& wait"
 }
 
 getCurrentSnapshot () {
@@ -137,6 +133,7 @@ init () {
     start=`date +%s`
     git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps -e \!.npm -e \!vendor
     git clean -fdx -e .idea -e qa.sh -e data/dumps -e .npm -e vendor
+    git stash
     git reset --hard HEAD
     took=$((`date +%s`-$start))
     echo "took $took sec"
@@ -157,12 +154,8 @@ init () {
     echo "took $took sec"
 
     start=`date +%s`
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
-    echo -e "${RED}===]>${NC} console q:w:s -s"
-    docker/sdk cli "console q:w:s -s"
+    echo -e "${RED}===]>${NC} console q:w:s [3 workers]... wait"
+    docker/sdk cli "console q:w:s& console q:w:s& console q:w:s& wait"
     took=$((`date +%s`-$start))
     echo "took $took sec"
 
