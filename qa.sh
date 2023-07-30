@@ -138,6 +138,9 @@ init () {
     [ $currentBranch != "$primaryBranch"  ] && [ "$secondOption" != "-f" ] && echo "[ERROR] I can init project only under primaryBranch: $primaryBranch. To force please add '-f'." && exit 1;
     [ ! -f $deployPath ] && echo "$deployPath does not exist. Did you boot project before by 'docker/sdk boot'?" && exit 1;
 
+    echo "try to stop instance... wait"
+    docker/sdk stop &>> /dev/null
+
     start=`date +%s`
     git clean -fdX -e \!.idea -e \!qa.sh -e \!data/dumps -e \!.npm -e \!vendor
     git clean -fdx -e .idea -e qa.sh -e data/dumps -e .npm -e vendor
