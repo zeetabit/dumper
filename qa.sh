@@ -103,6 +103,9 @@ warmup() {
     echo -e "${RED}===]>${NC} composer install --prefer-dist"
     docker/sdk cli "composer install --prefer-dist"
 
+    echo -e "${RED}===]>${NC} composer dump-autoload"
+    docker/sdk cli "composer dump-autoload"
+
     local countFiles
     countFiles=$(git diff --name-status "$primaryBranch" | grep "src/" | grep "D   \|A     " | wc -l | tr -d '[:blank:]')
     countFiles=$(( $countFiles+0 ))
