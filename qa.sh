@@ -150,6 +150,7 @@ init () {
     echo "took $took sec"
 
     mkdir -p $dumperDirPath
+    [ ! -f $dumperDistPath ] && echo "[ERROR] dumper dist path not exists, download from github through wget...." && wget $DUMPER_DIST_PATH -O $dumperDistPath;
     cp -R "$dumperDistPath" "$dumperPath"
 
     start=`date +%s`
