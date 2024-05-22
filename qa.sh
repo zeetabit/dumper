@@ -91,7 +91,7 @@ echo "oooooooooooooo> start <oooooooooooooo"
 dumperDirPath="data/dumps";
 dumperPath=$dumperDirPath/dumper.bash
 dumperDistPath='./tests/dump_docker_data_to_logs_in_pipeline.sh'
-[ ! -f $dumperDistPath ] && echo "[ERROR] dumper dist path not exists do use have installed project under this directory?" && exit 1;
+[ ! -f $dumperDistPath ] && echo "[ERROR] dumper dist file is not exists, download from github through wget...." && wget https://raw.githubusercontent.com/zeetabit/dumper/main/dumper.bash -O $dumperDistPath;
 [ ! -f $dumperPath ] && echo "[WARNING] dumper is not exists, copying initial one... " && cp $dumperDistPath $dumperPath;
 
 warmup() {
