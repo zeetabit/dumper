@@ -111,7 +111,7 @@ if [[ ! -v availableSubModes[$subMode] ]]; then IllegalSubMode; exit 1; fi
 mode="${availableModes[$mode]}"
 printf "ok\n";
 
-if [[ $(dirname "$0") != "$dumpsPath" ]]; then "I can work only under data/dumps directory. Please move me to {spryker_project_path}/data/dumps directory, create directory if it not exists."; exit 1; fi
+if [[ $(dirname "$0") != "$dumpsPath" ]]; then echo "I can work only under data/dumps directory. Please move me to {spryker_project_path}/data/dumps directory, create directory if it not exists."; exit 1; fi
 
 printf "Current directory is %s... " "$directory";
 if [[ $directory != "${startDirectory: -${#directory}}"  ]]; then echo "You can call me only from spryker 'directory' path." && exit 1; fi
